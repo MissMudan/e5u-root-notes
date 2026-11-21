@@ -35,7 +35,7 @@ https://github.com/MissMudan/e5u-root-notes
 - 执行 spl-unlock.bin 后 CHECK_BAUD FAIL + device removed → 正常，不是失败
 - 解锁成功判据：miscdata 偏移 8192 的 64 字节 = 32B + 16B + 16B，零字节 0/64
 - 完全解锁判据：ro.boot.flash.locked=0 且 verifiedbootstate=orange 且 vbmeta.device_state=unlocked
-- 进 BootROM：先关机，同时按住音量加+减不松，再插线，保持 20-30 秒
+- 进 BootROM：先关机，同时按住音量加+减不松，再插线，按住约 10 秒端口就出现（10 秒左右即可，不必按到二三十秒）
 
 禁止事项：
 - 禁止重签 vbmeta
