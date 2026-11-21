@@ -23,6 +23,7 @@ https://github.com/MissMudan/e5u-root-notes
   7. artifacts/                 —— 每一步的原始 spd_dump 日志，用来对照"正常输出长什么样"
 
 硬性纪律：
+- 第一步永远是让人类开启开发者选项（设置→关于手机→连点版本号 7 次）并打开 USB 调试，插线时在手机上勾"一律允许"；`adb devices` 必须显示 device（不是 unauthorized/offline/空），否则不许进入任何后续步骤。
 - 每一步执行后，先比对预期输出再执行下一步；不符就停下诊断，不许"再试一次看看"。
 - 每两条 spd_dump 命令之间必须 Stop-Process spd_dump，否则 COM 口被占用报 Access denied。
 - 擦除 splloader / splloader_bak 之前，必须确认已拿到 262144B 的 splloader.bin 和 3145728B 的 uboot.bin。
@@ -52,6 +53,7 @@ https://github.com/MissMudan/e5u-root-notes
 
 | 常见失败 | 后果 | 本仓库的应对 |
 | --- | --- | --- |
+| 没先开开发者选项 / USB 调试 | `adb devices` 空或 `unauthorized`，备份、读分区、`reboot` 全部无从开始，误判"设备连不上" | `00-preparation.md` 第零节给出开关路径、授权弹窗与四种失败现象的处理 |
 | 直接用 `fastboot flashing unlock` | 报 `unknown cmd.`，然后判定"此机型不支持" | `04-failed-paths.md` 明确列出所有 fastboot 死路 |
 | 装第三方 VCOM 驱动 | 端口正常但 `usb_send failed`，误判工具不兼容 | `00-preparation.md` 给出 `SprdVendorRequest=1` 这个唯一判据 |
 | 不擦 SPL 就写 cboot | 机器正常开机、`flash.locked` 仍为 1，误判流程无效 | `05-full-flow.md` 阶段 4 明确标注"必须先擦两槽" |
