@@ -2,25 +2,28 @@
 *.img
 *.bin
 *.apk
-*.apk.zip
-*.zip
-*.log
-*.xml
-*.reg
-*.inf
 *.dll
 *.exe
+*.msi
+*.reg
+*.inf
+*.zip
 
-# 本地工作目录
+# 本地工作目录（原始工具、固件、备份都在这里，不入库）
 backup/
 brom/
 patch/
 probe/
-tools/
-driver*/
-spd-driver*/
-cve-tool*/
+driver/
+driver-clean/
+spd-driver-official/
+cve-tool/
+cve-tool-c53/
+cve-tool-emmc/
 out/
+
+# 例外：artifacts 下的实测日志要发布
+!artifacts/**/*.log
 
 # 系统文件
 Thumbs.db

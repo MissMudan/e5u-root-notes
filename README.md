@@ -1,8 +1,12 @@
 # GAMEMT E5 Ultra (UMS9230) 解锁 BL 与 Root 全记录
 
+> **⚠️ 本项目全程由 AI 操作完成。**
+> 从驱动排查、BootROM 解锁、`init_boot` 打补丁到性能调度脚本，所有命令均由 AI 在真实设备上规划并执行，人类只负责物理操作（按键进 BootROM、插拔线缆）与授权。文中数据、日志、失败记录都是这台机器的实测结果，不是从教程里转述。请把它当作一份 AI 实操记录来读，而不是人工精调后的权威手册——照做之前请自行核对每一处风险。
+
 一台国产开源掌机 **GAMEMT / 漫特科技 E5 Ultra（型号 E5U，6GB+128GB，紫光展锐虎贲 T620 / UMS9230，Android 14）** 从"厂商锁死 Bootloader"到"完整 root + 可调性能调度"的完整过程记录。
 
-所有步骤都在这台真机上跑通并留下了可复现的数据判据，不是在别人教程里抄一遍。
+所有步骤都在这台真机上跑通并留下了可复现的数据判据，`artifacts/` 里是当时产生的原始日志与取证文件。
+
 
 ## 最终结果
 
@@ -45,11 +49,20 @@
 - [docs/03-perf-tuning.md](docs/03-perf-tuning.md) — UMS9230 的调频结构与四档脚本说明
 - [docs/04-failed-paths.md](docs/04-failed-paths.md) — 已验证走不通的路，避免后来者重复劳动
 
-## 脚本
+## 脚本与过程文件
+
+```
+scripts/    可直接复用的脚本（调频切换、开机自动应用、headless 打补丁）
+tools/      本次排查过程中写的 PowerShell 小工具（驱动安装、端口监视、SPL 比对等）
+artifacts/  实测日志、分区表、解锁标志样本
+```
 
 - [scripts/perfctl.sh](scripts/perfctl.sh) — 调频档位切换（需要 root）
 - [scripts/e5u_perf.sh](scripts/e5u_perf.sh) — Magisk `service.d` 开机自动恢复档位
 - [scripts/patch-init-boot.ps1](scripts/patch-init-boot.ps1) — 从面具 APK 里自动提取组件、在机内打 `init_boot` 补丁
+- [tools/](tools/) — `install-sprd-driver*.ps1`（驱动安装）、`port-probe.ps1` / `usb-monitor.ps1`（端口监视）、`diff-spl.ps1`（补丁差异比对）、`show-m.bin.ps1`（解锁标志解析）
+- [artifacts/](artifacts/) — 每一步 `spd_dump` 的原始日志、70 分区表、`miscdata` 解锁标志样本；厂商固件与第三方二进制**一律未包含**，说明见 [artifacts/README.md](artifacts/README.md)
+
 
 ## 免责声明
 

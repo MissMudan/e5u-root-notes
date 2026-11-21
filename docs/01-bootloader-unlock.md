@@ -38,14 +38,18 @@ Get-Process spd_dump -ErrorAction SilentlyContinue | Stop-Process -Force
 
 ## 3. 进入 BootROM
 
+**先关机，然后两个音量键必须同时按住，端口才会出来。** 只按其中一个、或者先插线再按键，都进不去。
+
 ```
-长按电源 15–20 秒强制断电
-→ 同时按住 音量加 + 音量减
-→ 插 USB 线
-→ 保持 20–30 秒
+关机（长按电源 15–20 秒强制断电，确认屏幕全黑、无震动）
+→ 同时按住「音量加」+「音量减」，两个键都别松
+→ 保持按住的状态插上 USB 线
+→ 继续按住 20–30 秒，直到电脑上出现 SPRD 端口
 ```
 
 设备枚举为 `USB\VID_1782&PID_4D00`，驱动正确时装好即为 `SPRD U2S Diag (COMx)`。
+
+这是本机**唯一**可靠的进入方式：`adb shell reboot edl` 只会普通重启进 Android，`adb reboot bootloader` 进的是 fastboot 也不是下载模式，而 fastboot 侧 `oem edl` 之类命令全部 `unknown cmd.`。
 
 注意部分机器**上电会自己继续启动**，端口只存在几十秒就消失；也遇到过电池被放干、电脑 USB 0.5A 充不进去、整机毫无反应的情况，先充一段时间再来。
 

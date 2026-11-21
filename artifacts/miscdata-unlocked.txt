@@ -1,0 +1,26 @@
+miscdata 解锁标志（本机实测，偏移 8192，长度 64）
+
+读取命令：
+  spd_dump.exe --wait 60 exec_addr 0x65015f08 fdl fdl1-dl.bin 0x65000800 fdl fdl2-dl.bin 0x9efffe00 exec read_part miscdata 8192 64 m.bin
+
+十六进制：
+
+BF 02 A9 C1 B6 1B 05 7D 20 60 F4 A3 C4 47 8A E3
+81 C2 0C 57 5C DE 1A 57 AB DD A2 1E 52 B6 E9 F6
+04 18 1A 27 1E CA 0A 53 24 11 7F D7 42 7D 51 6A
+04 18 1A 27 1E CA 0A 53 24 11 7F D7 42 7D 51 6A
+
+长度     64 字节
+零字节   0 / 64
+结构     32 字节哈希 + 16 字节 + 16 字节（后两段完全相同）
+
+判定：
+- 全 0                → 未解锁
+- 32+16+16、零字节 0  → 已解锁
+
+ASCII 视图为乱码哈希，属正常现象。
+
+实测结论：写入后重启，miscdata 内容保持不变，同时
+  ro.boot.flash.locked      = 0
+  ro.boot.verifiedbootstate = orange
+  ro.boot.vbmeta.device_state = unlocked
