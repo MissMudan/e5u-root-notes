@@ -8,8 +8,11 @@
 详见 [00-preparation.md](00-preparation.md)。最小必要条件：
 
 ```
-adb 可通 + adb shell 是 uid=0 + 构建号已记录 + 关键分区已备份 + 能进 BootROM + 驱动正确
+开发者选项已开启 + USB 调试已打开并在电脑上授权（adb devices 显示 device）
++ adb shell 是 uid=0 + 构建号已记录 + 关键分区已备份 + 能进 BootROM + 驱动正确
 ```
+
+**顺序上先做 USB 调试**：设置 → 关于手机 → 连点版本号 7 次 → 开发者选项 → 打开 USB 调试 → 插线时在手机上勾"一律允许"。`adb devices` 显示 `unauthorized` / `offline` / 空列表都算没通，先解决再往下，不要试图用 `spd_dump` 绕过——BootROM 通道只管刷写，备份和日常操作全依赖 adb。
 
 ## 阶段 1 · 打通下载模式通道
 
