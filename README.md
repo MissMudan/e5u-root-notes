@@ -1,7 +1,12 @@
 # GAMEMT E5 Ultra (UMS9230) 解锁 BL 与 Root 全记录
 
-> **⚠️ 本项目全程由 AI 操作完成。**
-> 从驱动排查、BootROM 解锁、`init_boot` 打补丁到性能调度脚本，所有命令均由 AI 在真实设备上规划并执行，人类只负责物理操作（按键进 BootROM、插拔线缆）与授权。文中数据、日志、失败记录都是这台机器的实测结果，不是从教程里转述。请把它当作一份 AI 实操记录来读，而不是人工精调后的权威手册——照做之前请自行核对每一处风险。
+> **⚠️ 本项目全程由 AI 操作完成**
+>
+> **执行者：豆包（Doubao，字节跳动旗下 AI 助手）。** 从驱动排查、BootROM 解锁、`init_boot` 打补丁到性能调度脚本，所有命令均由豆包 AI 在真实设备上规划并逐步执行；人类只负责物理操作（关机、按住音量键进 BootROM、插拔线缆）与授权。
+>
+> 文中数据、日志、失败记录都是这台机器的实测结果，不是从教程里转述。请把它当作一份 **AI 实操记录** 来读，而不是人工精调后的权威手册——照做之前请自行核对每一处风险。
+>
+> 下一个接手的是 AI？直接读 **[AI-GUIDE.md](AI-GUIDE.md)**，里面有可直接复制的提示词与执行纪律。
 
 一台国产开源掌机 **GAMEMT / 漫特科技 E5 Ultra（型号 E5U，6GB+128GB，紫光展锐虎贲 T620 / UMS9230，Android 14）** 从"厂商锁死 Bootloader"到"完整 root + 可调性能调度"的完整过程记录。
 
@@ -44,10 +49,18 @@
 
 ## 文档
 
-- [docs/01-bootloader-unlock.md](docs/01-bootloader-unlock.md) — BootROM 解锁全过程，含驱动踩坑与判据
-- [docs/02-magisk-root.md](docs/02-magisk-root.md) — 不依赖手机 GUI 的 headless 打补丁流程、换面具、回滚
-- [docs/03-perf-tuning.md](docs/03-perf-tuning.md) — UMS9230 的调频结构与四档脚本说明
-- [docs/04-failed-paths.md](docs/04-failed-paths.md) — 已验证走不通的路，避免后来者重复劳动
+**推荐阅读顺序**（交给 AI 时请勿跳步）：
+
+| 顺序 | 文件 | 内容 |
+| --- | --- | --- |
+| 0 | [AI-GUIDE.md](AI-GUIDE.md) | **给下一个 AI 的交接文档**：可直接复制的提示词、执行纪律、常见误判对照 |
+| 1 | [docs/00-preparation.md](docs/00-preparation.md) | **开工前准备**：机型核对、软件清单、分区备份、物理条件、风险确认 |
+| 2 | [docs/05-full-flow.md](docs/05-full-flow.md) | **端到端 10 个阶段**，每个阶段都有预期输出与失败处理 |
+| 3 | [docs/01-bootloader-unlock.md](docs/01-bootloader-unlock.md) | BootROM 解锁细节：驱动判据、擦 SPL 顺序、解锁标志判据 |
+| 4 | [docs/02-magisk-root.md](docs/02-magisk-root.md) | headless 打 `init_boot` 补丁、双槽写入、换面具、回滚 |
+| 5 | [docs/03-perf-tuning.md](docs/03-perf-tuning.md) | UMS9230 调频结构与四档脚本说明 |
+| 6 | [docs/04-failed-paths.md](docs/04-failed-paths.md) | **已验证走不通的路**，避免重复劳动 |
+| 7 | [artifacts/](artifacts/) | 每一步的原始日志与取证文件 |
 
 ## 脚本与过程文件
 
@@ -63,6 +76,25 @@ artifacts/  实测日志、分区表、解锁标志样本
 - [tools/](tools/) — `install-sprd-driver*.ps1`（驱动安装）、`port-probe.ps1` / `usb-monitor.ps1`（端口监视）、`diff-spl.ps1`（补丁差异比对）、`show-m.bin.ps1`（解锁标志解析）
 - [artifacts/](artifacts/) — 每一步 `spd_dump` 的原始日志、70 分区表、`miscdata` 解锁标志样本；厂商固件与第三方二进制**一律未包含**，说明见 [artifacts/README.md](artifacts/README.md)
 
+
+## 完整性说明（给读取者）
+
+**已包含——足以让另一个 AI 或人从头复现的判断性信息：**
+
+- 全流程 10 个阶段的命令、预期输出、失败分支与判据
+- 每一步的原始 `spd_dump` 日志（含失败样本与成功样本的对比）
+- 70 个分区的完整定义表
+- 解锁标志 64 字节的原始十六进制与判定标准
+- 所有可复用脚本与排查工具（含驱动安装、端口监视、SPL 比对、补丁生成）
+- 已验证走不通的路，以及"为什么这些异常是正常的"
+
+**未包含——都是不可转分发的二进制：**
+
+厂商固件（SPL / uboot / fdl1 / fdl2 / cboot）、`init_boot` 等分区镜像、`spd_dump.exe` 等第三方工具、驱动安装包、面具 APK。原因与获取方式见 [artifacts/README.md](artifacts/README.md)。
+
+也就是说：**这套文档是完整的"怎么想、怎么判、怎么做"，缺的只是"物料"。** 谁要复现，按 `docs/00-preparation.md` 的清单把物料备齐即可，物料本身都能从原作者仓库或官方渠道拿到。
+
+**尚未验证、请勿当作已知：** 本仓库只在一台设备、一个构建号上验证；Kitsune 30.7 为第三方接续构建；LSPosed / HMA 相关内容未实施；不同构建号的 SPL 补丁偏移是否一致未验证。详见 [AI-GUIDE.md](AI-GUIDE.md) 第四节。
 
 ## 免责声明
 
