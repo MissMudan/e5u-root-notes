@@ -1,0 +1,28 @@
+# 二进制与设备私有数据一律不进仓库
+*.img
+*.bin
+*.apk
+*.apk.zip
+*.zip
+*.log
+*.xml
+*.reg
+*.inf
+*.dll
+*.exe
+
+# 本地工作目录
+backup/
+brom/
+patch/
+probe/
+tools/
+driver*/
+spd-driver*/
+cve-tool*/
+out/
+
+# 系统文件
+Thumbs.db
+desktop.ini
+.DS_Store
