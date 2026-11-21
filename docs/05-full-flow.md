@@ -106,7 +106,7 @@ Get-Process spd_dump -ErrorAction SilentlyContinue | Stop-Process -Force
 | --- | --- |
 | 预期 | 三条 `Write Part Done`：`splloader`(0x40000) / `uboot_a`(0x300000) / `misc`(0x800) |
 | 注意 | 写 66152B 到 256KB 区域时工具会自动补齐，日志显示 `file size: 0x40000`，正常 |
-| 失败：又是 `usb_send failed (0/1)` | 设备停在上一次 `FDL2 >` 提示态而非 BootROM。清进程 → 关机 → 同时按住音量加+减 → 插线 → 重跑 |
+| 失败：又是 `usb_send failed (0/1)` | 设备停在上一次 `FDL2 >` 提示态而非 BootROM。清进程 → 关机 → 同时按住音量加+减 → 插线 → 按住约 10 秒等端口出现 → 重跑 |
 
 `reset` 后设备**不一定自动上电**，手动长按电源 3–5 秒开机。
 
