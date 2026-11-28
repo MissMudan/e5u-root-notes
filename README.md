@@ -66,6 +66,7 @@
 | 3 | [docs/01-bootloader-unlock.md](docs/01-bootloader-unlock.md) | BootROM 解锁细节：驱动判据、擦 SPL 顺序、解锁标志判据 |
 | 4 | [docs/02-magisk-root.md](docs/02-magisk-root.md) | headless 打 `init_boot` 补丁、双槽写入、换面具、回滚 |
 | 5 | [docs/03-perf-tuning.md](docs/03-perf-tuning.md) | UMS9230 调频结构与四档脚本说明 |
+| 5.5 | [docs/07-flashing.md](docs/07-flashing.md) | **刷写操作手册**：三条刷写通道怎么选、A/B 双槽规则、常用命令速查、展锐 fastboot 怪脾气、回滚与刷 GSI |
 | 6 | [docs/04-failed-paths.md](docs/04-failed-paths.md) | **已验证走不通的路**，避免重复劳动 |
 | 7 | [artifacts/](artifacts/) | 每一步的原始日志与取证文件 |
 
