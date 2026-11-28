@@ -125,7 +125,7 @@ ro.boot.vbmeta.device_state  = unlocked
 
 ## 阶段 8 · 打 root 补丁
 
-详见 [02-magisk-root.md](02-magisk-root.md)。核心三步：
+详见 [02-magisk-root.md](02-magisk-root.md)，刷写命令与 A/B 规则详见 [07-flashing.md](07-flashing.md)。核心三步：
 
 ```powershell
 .\scripts\patch-init-boot.ps1 -Apk Magisk.apk -InitBoot backup\init_boot_a.img    # 提组件 + 机内打补丁
