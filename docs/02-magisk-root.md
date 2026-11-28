@@ -92,6 +92,40 @@ adb shell "ps -A | grep magisk"            → root <pid> ... magiskd
 
 注意：`su` **不在 adb shell 的默认 PATH 里**，直接敲 `su` 会 `inaccessible or not found`，要用全路径 `/debug_ramdisk/su`。
 
+## 图形界面路径（推荐给下一个人，两种情形别搞混）
+
+上面第 2–4 步是"没有 root 时"的做法（headless）。如果接手的人更愿意在手机上点，就按下面走，**关键区别是"有没有现成的 root"**：
+
+### 情形 A · 还没有 root（首次拿 root）
+
+装 APK **不需要 root**，先在系统里装好，再让 App 自己产出补丁镜像：
+
+1. `adb install -r Kitsune_30.7_140326.apk`（本仓库 Release 附件，SHA256 见 [tools/magisk-307-NOTES.md](../tools/magisk-307-NOTES.md)）
+2. 把**原厂** `init_boot.img` 推到 `/sdcard/Download/`
+3. 打开面具 → 主页「安装」→ 选 **「选择并修补一个文件」** → 选 `init_boot.img`
+4. 输出在 `/sdcard/Download/magisk_patched-30700_xxxxx.img`，`adb pull` 回电脑
+5. 刷双槽（这一步必须 fastboot 或 dd，App 写不了自己的分区）：
+
+```powershell
+adb reboot bootloader
+fastboot flash init_boot magisk_patched-30700_xxxxx.img --slot all
+fastboot reboot
+```
+
+6. 重启后打开面具，主页显示版本号即成功；`adb shell "/debug_ramdisk/su -c id"` 应返回 `uid=0 … context=u:r:magisk:s0`
+
+### 情形 B · 已经有 root（换面具或升级）
+
+如果设备上已经有 Magisk（本项目当初是 31.1）在跑，装 Kitsune 后**不用再碰 fastboot**：
+
+1. 先用旧面具 App 确认 root 正常
+2. 装 Kitsune APK（包名 `io.github.x0eg0.magisk`，与 `com.topjohnwu.magisk` 不同，可共存安装）
+3. 打开 Kitsune → 「安装」→ 选 **「直接安装（推荐）」** → App 自己重打补丁并写入 `init_boot`
+4. 重启 → `magisk -v` 变成 `46f5f839-kitsune:MAGISK:R` 即接管成功
+5. **确认接管成功后再卸载旧面具**，顺序反了会两个 daemon 抢同一个 `magiskd`
+
+⚠️ 两种情形都别做的事：给已经打过补丁的镜像再打一次补丁；同时装两个面具并都执行"直接安装"。
+
 ## 从 Magisk 换到 Kitsune Mask
 
 Kitsune 是 Magisk 的分支，包名不同（本机用的第三方接续版本为 `io.github.x0eg0.magisk`），两者**不能同时装**，否则两套 app 抢同一个 `magiskd`。
