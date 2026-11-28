@@ -38,6 +38,16 @@ adb shell id                                 # 期望 uid=0(root) context=u:r:su
 
 ## 一、机型与固件核对
 
+先跑一条只读命令把硬件档案采下来，后面所有判断都基于它：
+
+```powershell
+pwsh -File .\scripts\collect-profile.ps1 -AdbPath <adb路径> -Out .\my-hw.md
+```
+
+采完拿 `my-hw.md` 和 [06-machine-profile.md](06-machine-profile.md) 对照。**若 `ro.board.platform`、`ro.hardware`、构建号三项有任何一项与本文不同，先按 06 的第 14 节判断能不能继续**，不要直接套用本文的分区与偏移。
+
+然后逐项核对：
+
 ```powershell
 adb shell getprop ro.product.model          # 期望 E5U
 adb shell getprop ro.build.display.id       # 记录完整构建号，本项目为 XNM_TF05_V40_E5U_..._20250926_1024
@@ -103,7 +113,7 @@ foreach ($p in @('boot_a','init_boot_a','vbmeta_a','dtbo_a','vendor_boot_a','ubo
 
 `boot`/`init_boot`/`vbmeta` 的 `_b` 槽与本机 `_a` 内容相同，也一并拉一份。
 
-**另外两样比任何备份都重要**——通过 BootROM 读出的原始 SPL 与 uboot：
+**另外两样比任何备份都重要**——原始 SPL 与 uboot：
 
 ```
 splloader.bin   262144 字节
@@ -111,6 +121,32 @@ uboot.bin       3145728 字节
 ```
 
 这两个文件是"设备唯一不可再生的还原源"。SPL 一旦擦掉又没有备份，就只能靠厂商救砖固件恢复。
+
+### 4.1 先进的一步：SPL 其实能在 adb 下直接备份（本机已验证）
+
+原流程是"进 BootROM 才拿到 SPL"。补采档案时实测发现**不用**——SPl 的 A/B 两槽在本机各是一块独立块设备，`adb` 有 root 就能直读，比进 BootROM 安全得多：
+
+```bash
+adb shell "dd if=/dev/block/sdb of=/sdcard/bk/spl_a.bin bs=1024 count=256"
+adb shell "dd if=/dev/block/sdc of=/sdcard/bk/spl_b.bin bs=1024 count=256"
+adb pull "/sdcard/bk/spl_a.bin" "backup\spl_a.bin"
+adb pull "/sdcard/bk/spl_b.bin" "backup\spl_b.bin"
+adb shell "md5sum /sdcard/bk/spl_a.bin /sdcard/bk/spl_b.bin"
+```
+
+本机实测三份完全一致，可作校验基准：
+
+| 来源 | 大小 | MD5 |
+| --- | --- | --- |
+| `/dev/block/sdb`（A 槽 `spl_a`） | 262144 | `75EF4A02E1B92CC9712B1488AAC992E0` |
+| `/dev/block/sdc`（B 槽 `spl_b`） | 262144 | `75EF4A02E1B92CC9712B1488AAC992E0` |
+| 原经 BootROM 读出的 `splloader.bin` | 262144 | `75EF4A02E1B92CC9712B1488AAC992E0` |
+
+先确认文件头是 `44 48 54 42`（`DHTB`，展锐下载头），再核对 MD5。`uboot_a` 同理可直接 `md5sum /dev/block/by-name/uboot_a`（本机 `59FE195EB9B3C743D30DED1397CDF654`）。
+
+**顺序建议**：先按 4.1 用 adb 拿到 SPL+uboot 并校验，再进 BootROM 走阶段 1 读出同一份做二次确认。两边的 MD5 相同，说明通道和备份都可信，可以放心往下擦。
+
+**限制**：这条路径要求 adb 有 root（本机 `ro.secure=0` 天然满足；若 `ro.secure=1` 需先 `adb root` 成功），否则仍以 BootROM 读取为准。设备上 `spl_a`/`spl_b` 的落点因机型而异，动手前先 `ls -l /dev/block/by-name/spl_a /dev/block/by-name/spl_b` 确认，**不要**默认就是 `sdb`/`sdc`。详见 [06-machine-profile.md](06-machine-profile.md) 第七节。
 
 ## 五、物理条件
 
@@ -133,6 +169,7 @@ uboot.bin       3145728 字节
 ```
 [ ] 开发者选项已开启（版本号连点 7 次）
 [ ] USB 调试已打开，电脑已授权，adb devices 显示 device  ← 不通就别往下
+[ ] 硬件档案已采集并与 docs/06 对照，平台/硬件标识/构建号确认一致
 [ ] 构建号已记录
 [ ] 厂商解锁路线已确认走不通
 [ ] 官方 SPD 驱动已装（INF 有 SprdVendorRequest=1）
