@@ -81,6 +81,7 @@ artifacts/  实测日志、分区表、解锁标志样本
 - [scripts/e5u_perf.sh](scripts/e5u_perf.sh) — Magisk `service.d` 开机自动恢复档位
 - [scripts/patch-init-boot.ps1](scripts/patch-init-boot.ps1) — 从面具 APK 里自动提取组件、在机内打 `init_boot` 补丁
 - [scripts/collect-profile.ps1](scripts/collect-profile.ps1) — **硬件档案采集**：只读跑一条命令，把 SoC/CPU/GPU/存储/屏幕/手柄/传感器/散热全导成 Markdown，用来和自己的机器逐项对照
+- [tools/magisk-307-NOTES.md](tools/magisk-307-NOTES.md) — 面具安装包的 SHA256、包名、来源与非官方签名说明（APK 本体在 Release 附件）
 - [tools/](tools/) — `install-sprd-driver*.ps1`（驱动安装）、`port-probe.ps1` / `usb-monitor.ps1`（端口监视）、`diff-spl.ps1`（补丁差异比对）、`show-m.bin.ps1`（解锁标志解析）
 - [artifacts/](artifacts/) — 每一步 `spd_dump` 的原始日志、70 分区表、`miscdata` 解锁标志样本；厂商固件与第三方二进制**一律未包含**，说明见 [artifacts/README.md](artifacts/README.md)
 
@@ -98,7 +99,9 @@ artifacts/  实测日志、分区表、解锁标志样本
 
 **未包含——都是不可转分发的二进制：**
 
-厂商固件（SPL / uboot / fdl1 / fdl2 / cboot）、`init_boot` 等分区镜像、`spd_dump.exe` 等第三方工具、驱动安装包、面具 APK。原因与获取方式见 [artifacts/README.md](artifacts/README.md)。
+厂商固件（SPL / uboot / fdl1 / fdl2 / cboot）、`init_boot` 等分区镜像、`spd_dump.exe` 等第三方工具、驱动安装包。原因与获取方式见 [artifacts/README.md](artifacts/README.md)。
+
+**唯一例外**：本项目实测用的面具安装包 `Kitsune_30.7_140326.apk` 以 **Release 附件**形式提供（不进入 git 历史，`.gitignore` 仍排除 `*.apk`）。SHA256 `18A0F7B9…6A9F`、来源与非官方签名的说明写在 [tools/magisk-307-NOTES.md](tools/magisk-307-NOTES.md)，下载页见 [Releases](https://github.com/MissMudan/e5u-root-notes/releases/tag/v30.7-kitsune)。
 
 也就是说：**这套文档是完整的"怎么想、怎么判、怎么做"，缺的只是"物料"。** 谁要复现，按 `docs/00-preparation.md` 的清单把物料备齐即可，物料本身都能从原作者仓库或官方渠道拿到。
 
@@ -110,7 +113,7 @@ artifacts/  实测日志、分区表、解锁标志样本
 
 解锁过程涉及 BootROM 下载模式与分区擦写，**操作失误会导致设备完全不能开机**。作者只在上述这一台机器、这一个构建号上验证通过，其他机型/固件请勿照搬命令。
 
-本项目只记录技术过程，**不提供任何厂商固件、驱动安装包或第三方 APK 的分发**，请自行从官方渠道获取。
+本项目只记录技术过程，**不提供任何厂商固件或驱动安装包的分发**，请自行从官方渠道获取。唯一随仓库发布的第三方二进制是本项目实测使用的面具安装包（Release 附件，见上方说明），**非官方签名，请自行核对 SHA256 后再安装**。
 
 ## 致谢
 
