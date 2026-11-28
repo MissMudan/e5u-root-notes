@@ -26,11 +26,25 @@
 - HuskyDG 的原始分发仓库 `HuskyDG/magisk-files` 已删除，本包来自第三方接续构建（包名 `io.github.x0eg0.magisk`），**不是官方签名**。这一点在 `AI-GUIDE.md` 第四节也标注为"未验证的上游"。
 - 安装前请自行评估：非官方签名 + 非官方来源，存在被二次打包的风险。核对上面的 SHA256 能确认你拿到的和本项目实测的是同一个文件，但不能证明它没有被上游篡改。
 
-### 安装方式（本项目实测路径）
+### 安装方式
 
-1. 设备已完成 BL 解锁（`ro.boot.flash.locked=0`）
-2. 本项目的做法是 headless 打补丁，不依赖手机 GUI：从 APK 解出 `assets/boot_patch.sh`、`lib/arm64-v8a/libmagiskboot.so → magiskboot` 等组件，对**原厂** `init_boot.img` 打补丁后刷双槽
-3. 手动安装也可以：直接 `adb install -r Kitsune_30.7_140326.apk`，打开后按提示修补 `init_boot`，再 `fastboot flash init_boot` 到 `_a` 和 `_b` 两个槽
-4. 若设备上已有其他 Magisk（如 31.1 或 27001），**先卸载再装**，不同签名的面具互相覆盖会导致 root 状态异常
+**情形 A · 还没有 root（首次）**：装 APK 不需要 root，让 App 自己产出补丁镜像，再用 fastboot 刷双槽。
 
-详见 [docs/02-magisk-root.md](../docs/02-magisk-root.md)。
+1. `adb install -r Kitsune_30.7_140326.apk`
+2. 原厂 `init_boot.img` 推到 `/sdcard/Download/`
+3. 面具主页「安装」→「选择并修补一个文件」→ 选 `init_boot.img`
+4. `adb pull /sdcard/Download/magisk_patched-30700_*.img`
+5. `fastboot flash init_boot <镜像> --slot all`
+
+**情形 B · 已经有 root（换面具 / 升级）**：装上即可在 App 内直接完成，不用 fastboot。
+
+1. 装 Kitsune APK（包名 `io.github.x0eg0.magisk`，可与旧面具共存安装）
+2. 打开后「安装」→「直接安装（推荐）」→ 自动重打补丁并写入 `init_boot`
+3. 重启，`magisk -v` 变成 `46f5f839-kitsune:MAGISK:R` 即接管成功
+4. **确认接管成功后再卸载旧面具**（顺序反了会两个 daemon 抢同一个 magiskd）
+
+本项目当初走的是 headless 路径（从 APK 解出 `assets/boot_patch.sh`、`lib/arm64-v8a/libmagiskboot.so` 等组件在机内打补丁），适合脚本化复现；GUI 路径适合个人手动操作，两条路的产物等价。
+
+两种情形都别做：给已经打过补丁的镜像再打一次补丁；同时装两个面具并都点"直接安装"。
+
+详见 [docs/02-magisk-root.md](../docs/02-magisk-root.md) 的「图形界面路径」一节。
