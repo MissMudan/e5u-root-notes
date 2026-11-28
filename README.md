@@ -35,6 +35,8 @@
 
 关键前提：**`adb shell` 本身已经是 root**（`ro.secure=0`，`uid=0 context=u:r:su:s0`），能自由 `dd` 分区，但应用层拿不到 `su`。这大幅降低了救砖难度，也让"先手工备份全部关键分区"成为可能。
 
+**硬件规格**（6×A55@1.82G + 2×A75@2.21G、Mali-G57 384–850MHz、5.70GiB 可用内存、1280×720@60Hz 单模式、CH32V203 手柄、SK hynix UFS、5146mAh）全部实测值见 **[docs/06-machine-profile.md](docs/06-machine-profile.md)**，那里还有"别人的机器能不能照搬"的三档判据。想给自己的机器采集同样一份，跑 `scripts/collect-profile.ps1`（只读）。
+
 > **开工第一件事：打开开发者选项和 USB 调试。** 设置 → 关于手机 → 连点**版本号** 7 次 → 进"开发者选项" → 打开 **USB 调试** → 插线时在手机上勾"一律允许使用这台计算机进行调试"。`adb devices` 显示 **`device`** 才算通，`unauthorized` / `offline` / 空列表都不算。这一步不做，后面的备份、读分区、`reboot` 全部无从开始。
 
 > **进入 BootROM 的唯一方式**（本机实测）：先**关机**，然后**音量加和音量减两个键同时按住、都别松**，保持按住的状态插上 USB 线，**继续按住约 10 秒**，电脑上就会冒出展锐端口（10 秒左右即可，不必按到二三十秒；若还没出现就继续按住等它）。只按其中一个、或者先插线再按键，都进不去。
@@ -59,6 +61,7 @@
 | --- | --- | --- |
 | 0 | [AI-GUIDE.md](AI-GUIDE.md) | **给下一个 AI 的交接文档**：可直接复制的提示词、执行纪律、常见误判对照 |
 | 1 | [docs/00-preparation.md](docs/00-preparation.md) | **开工前准备**：开发者选项与 USB 调试、机型核对、软件清单、分区备份、物理条件、风险确认 |
+| 1.5 | [docs/06-machine-profile.md](docs/06-machine-profile.md) | **硬件档案**：SoC / CPU 簇 / GPU / 存储 / 屏幕 / 触摸 / 手柄 / 传感器 / 无线 / 电源 / 散热，以及"你的机器能不能照搬"的三档判据 |
 | 2 | [docs/05-full-flow.md](docs/05-full-flow.md) | **端到端 10 个阶段**，每个阶段都有预期输出与失败处理 |
 | 3 | [docs/01-bootloader-unlock.md](docs/01-bootloader-unlock.md) | BootROM 解锁细节：驱动判据、擦 SPL 顺序、解锁标志判据 |
 | 4 | [docs/02-magisk-root.md](docs/02-magisk-root.md) | headless 打 `init_boot` 补丁、双槽写入、换面具、回滚 |
@@ -77,6 +80,7 @@ artifacts/  实测日志、分区表、解锁标志样本
 - [scripts/perfctl.sh](scripts/perfctl.sh) — 调频档位切换（需要 root）
 - [scripts/e5u_perf.sh](scripts/e5u_perf.sh) — Magisk `service.d` 开机自动恢复档位
 - [scripts/patch-init-boot.ps1](scripts/patch-init-boot.ps1) — 从面具 APK 里自动提取组件、在机内打 `init_boot` 补丁
+- [scripts/collect-profile.ps1](scripts/collect-profile.ps1) — **硬件档案采集**：只读跑一条命令，把 SoC/CPU/GPU/存储/屏幕/手柄/传感器/散热全导成 Markdown，用来和自己的机器逐项对照
 - [tools/](tools/) — `install-sprd-driver*.ps1`（驱动安装）、`port-probe.ps1` / `usb-monitor.ps1`（端口监视）、`diff-spl.ps1`（补丁差异比对）、`show-m.bin.ps1`（解锁标志解析）
 - [artifacts/](artifacts/) — 每一步 `spd_dump` 的原始日志、70 分区表、`miscdata` 解锁标志样本；厂商固件与第三方二进制**一律未包含**，说明见 [artifacts/README.md](artifacts/README.md)
 
