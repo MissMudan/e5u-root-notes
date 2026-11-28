@@ -28,7 +28,7 @@ https://github.com/MissMudan/e5u-root-notes
 - 第二步跑 scripts/collect-profile.ps1 采硬件档案，对照 docs/06 的三档判据；平台、硬件标识、构建号任何一项不同，就不许直接套用后面的分区名与偏移。
 - 每一步执行后，先比对预期输出再执行下一步；不符就停下诊断，不许"再试一次看看"。
 - 每两条 spd_dump 命令之间必须 Stop-Process spd_dump，否则 COM 口被占用报 Access denied。
-- 擦除 splloader / splloader_bak 之前，必须确认已拿到 262144B 的 splloader.bin 和 3145728B 的 uboot.bin。
+- 擦除 splloader / splloader_bak 之前，必须确认已拿到 262144B 的 splloader.bin 和 3145728B 的 uboot.bin（uboot 两条获取途径见 docs/00 第 4.2 节：adb 直读 /dev/block/by-name/uboot_a，或 BootROM `r uboot`；两者 MD5 应相同；两个槽都要备）。
 - spl-unlock.bin 必须用当前这台机器的 SPL 现场生成，禁止使用仓库外的现成文件。
 - 写 init_boot 必须写 _a 和 _b 两个槽。
 - 设备的可写分区只在得到明确授权后才动；任何"清空数据"类操作先说明后果。
