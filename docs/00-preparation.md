@@ -148,6 +148,55 @@ adb shell "md5sum /sdcard/bk/spl_a.bin /sdcard/bk/spl_b.bin"
 
 **限制**：这条路径要求 adb 有 root（本机 `ro.secure=0` 天然满足；若 `ro.secure=1` 需先 `adb root` 成功），否则仍以 BootROM 读取为准。设备上 `spl_a`/`spl_b` 的落点因机型而异，动手前先 `ls -l /dev/block/by-name/spl_a /dev/block/by-name/spl_b` 确认，**不要**默认就是 `sdb`/`sdc`。详见 [06-machine-profile.md](06-machine-profile.md) 第七节。
 
+### 4.2 如何获取 uboot（两条途径，产物等价）
+
+uboot 在解锁流程里有两个用途：一是**擦 SPL 后被 `fdl2-cboot.bin` 顶替的位置**需要它才能恢复启动，二是阶段 7 还原时要 `w uboot` 写回去。它同样有两槽（`uboot_a` / `uboot_b`），本机 `_a`、`_b` 内容相同。
+
+**途径一 · adb 直读（更简单，不用进 BootROM）**
+
+```bash
+adb shell "ls -l /dev/block/by-name/uboot_a /dev/block/by-name/uboot_b"
+adb shell "dd if=/dev/block/by-name/uboot_a of=/sdcard/bk/uboot_a.img bs=4096"
+adb pull "/sdcard/bk/uboot_a.img" "backup\uboot_a.img"
+adb shell "md5sum /dev/block/by-name/uboot_a"
+```
+
+本机实测：`uboot_a` 落在 `/dev/block/sda8`，大小 **3145728 字节**（3MB），MD5 `59FE195EB9B3C743D30DED1397CDF654`。
+
+**途径二 · BootROM 读（`spd_dump`，阶段 1 顺带就做了）**
+
+```powershell
+.\spd_dump.exe --wait 60 exec_addr 0x65015f08 fdl fdl1-dl.bin 0x65000800 fdl fdl2-dl.bin 0x9efffe00 exec r splloader r uboot reset
+```
+
+产物 `uboot.bin`，大小同为 **3145728 字节**，MD5 与途径一相同。
+
+**两条途径的关系**
+
+| 项 | 途径一（adb dd） | 途径二（BootROM） |
+| --- | --- | --- |
+| 前提 | adb 有 root | 能进 BootROM + 驱动正确 |
+| 产物名 | `uboot_a.img` | `uboot.bin` |
+| 大小 | 3145728 | 3145728 |
+| 本机 MD5 | `59FE195E…CDF654` | `59FE195E…CDF654` |
+| 用途 | 备份、还原 | 备份、还原 |
+
+**同一个文件在不同文档里叫过不同名字**：`uboot.bin`、`uboot_orig.bin`、`uboot_a.img` 指的是同一份内容（本机 MD5 均相同）。写回时命令是 `w uboot <文件名>`，三种命名都行。
+
+**三个容易搞错的地方**
+
+1. **`uboot_log` 不是 uboot**。分区表里还有个 `uboot_log`，那是启动日志分区，别拿它当备份。
+2. **别漏了 `_b` 槽**。只备 `_a` 而机器当时从 `_b` 启动，还原后仍可能开不了机。两个槽都 dd 一份。
+3. **大小必须是 3145728**。文件和分区一样大是正常的（分区原本就这么大），但如果 `dd` 出来的文件明显偏小，说明读到了别的节点或没读全，重来。
+
+**写回（阶段 7）**
+
+```powershell
+.\spd_dump.exe --wait 60 exec_addr 0x65015f08 fdl fdl1-dl.bin 0x65000800 fdl fdl2-dl.bin 0x9efffe00 exec w splloader splloader_trim.bin w uboot uboot.bin w misc misc-wipe.bin reset
+```
+
+成功判据是 `Write Part Done: uboot_a, target: 0x300000`。
+
 ## 五、物理条件
 
 - **电量**：50% 以上。低电量时 USB 0.5A 充不进去，会出现"整机无反应"的假象
