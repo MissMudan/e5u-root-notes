@@ -67,6 +67,8 @@ Get-Process spd_dump -ErrorAction SilentlyContinue | Stop-Process -Force
 
 产出 `splloader.bin`(262144B) 与 `uboot.bin`(3145728B)。这两个是后面还原的命根子，**务必确认文件大小正常再往下走**。
 
+> 如果 adb 有 root，`uboot` 也可以直接 `dd /dev/block/by-name/uboot_a` 拿到（本机落点 `sda8`，MD5 `59FE195E…CDF654`，与 BootROM 读出的完全一致），详见 [00-preparation.md 第 4.2 节](00-preparation.md)。两种途径产物等价，`uboot.bin` / `uboot_orig.bin` / `uboot_a.img` 是同一份文件的三种叫法。
+
 **步骤 B — 擦除两槽 SPL + 写入 cboot**
 
 ```powershell
@@ -110,8 +112,10 @@ ASCII 视图是乱码哈希，属正常。
 **步骤 E — 还原分区并复位**
 
 ```powershell
-.\spd_dump.exe --wait 60 exec_addr 0x65015f08 fdl fdl1-dl.bin 0x65000800 fdl fdl2-dl.bin 0x9efffe00 exec w splloader splloader.bin w uboot uboot_orig.bin w misc misc-wipe.bin reset
+.\spd_dump.exe --wait 60 exec_addr 0x65015f08 fdl fdl1-dl.bin 0x65000800 fdl fdl2-dl.bin 0x9efffe00 exec w splloader splloader.bin w uboot uboot.bin w misc misc-wipe.bin reset
 ```
+
+（`uboot.bin` 就是步骤 A 备份的那份，早期笔记里写作 `uboot_orig.bin`，同一个文件。成功判据是 `Write Part Done: uboot_a, target: 0x300000`。）
 
 写 66152B 的裁剪版 SPL 到 256KB 区域时，工具会按目标分区大小补齐（日志显示 `file size: 0x40000`），`Write Part Done: splloader, target: 0x40000, written: 0x40000` 即为成功。SPL 镜像真实长度在 DHTB 头里，尾部补零不影响启动。
 
