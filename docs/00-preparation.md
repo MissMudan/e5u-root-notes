@@ -76,7 +76,7 @@ fastboot oem get_unlock_ability   # 期望 Not implement.
 | 需要的东西 | 说明 |
 | --- | --- |
 | platform-tools | `adb` / `fastboot`。本项目用 fastboot 37.0.1 |
-| **官方 SPD 驱动** | `SPD_Driver_R4.20.4201`，含 `sprdvcom.inf`(79KB)、`sprdadb.inf`、`rdavcom.inf`、`sprdvmdm.inf`，DriverVer `10/14/2020,4.20.42.134` |
+| **官方 SPD 驱动** | `SPD_Driver_R4.20.4201`，含 `sprdvcom.inf`(79KB)、`sprdadb.inf`、`rdavcom.inf`、`sprdvmdm.inf`，DriverVer `10/14/2020,4.20.42.134`。下载地址与验收方法见 3.1 |
 | `spd_dump` | 来自 `TomKing062/spreadtrum_flash`，只走 Channel9/COM，无 libusb 回退 |
 | `fdl1-dl.bin` / `fdl2-dl.bin` | 随解锁工具包提供，用于引导下载模式 |
 | `fdl2-cboot.bin` | 同上，用于在 SPL 被擦后接管启动 |
@@ -85,6 +85,47 @@ fastboot oem get_unlock_ability   # 期望 Not implement.
 | PowerShell 7 | 本项目所有脚本按 pwsh 写 |
 
 **不要**用 2015 版通用 VCOM 驱动（Provider 为 "DriverCoding Corporation" 的 `sprdvcom.inf`）。它能枚举出 `SPRD U2S Diag (COMx)` 且设备管理器显示正常，但 `spd_dump` 会稳定报 `usb_send failed (0 / 1)`。判断标准就看 INF 里有没有 `SprdVendorRequest=1`。
+
+### 3.1 这些驱动去哪下载
+
+**唯一必须装的：展锐官方 SPD 驱动 `SPD_Driver_R4.20.4201`**
+
+```
+https://androiddatahost.com/wp-content/uploads/SPD_Driver_R4.20.4201.zip
+```
+
+本项目实测下载地址（2026-11-28 复核仍为 `200 OK`，`application/zip`，**22,659,714 字节**）。下载后按下面三条验收，任何一条不符就换来源：
+
+| 验收项 | 期望值 |
+| --- | --- |
+| 压缩包大小 | 22,659,714 字节（约 21.6MB） |
+| 解压后 `sprdvcom.inf` | 约 79KB，`DriverVer=10/14/2020,4.20.42.134` |
+| INF 里关键字 | 含 `SprdVendorRequest=1` ← **这条最关键** |
+
+包内共 4 个 INF：`sprdvcom.inf`（USB VCOM/下载模式，即 `spd_dump` 用的通道）、`sprdadb.inf`（ADB 接口）、`rdavcom.inf`（老平台）、`sprdvmdm.inf`（调制解调器）。
+
+**备用来源**（官方链接失效时）
+
+- `TomKing062/spreadtrum_flash` 的 Releases：`https://github.com/TomKing062/spreadtrum_flash/releases`（`spd_dump` 本身也从这里拿）
+- `TomKing062/CVE-2022-38694_unlock_bootloader` 的 Releases 与 Wiki：`https://github.com/TomKing062/CVE-2022-38694_unlock_bootloader/releases`
+- XDA / 4pda 上搜 "SPD_Driver_R4.20.4201" 或 "Spreadtrum USB driver"，**只要 INF 里有 `SprdVendorRequest=1` 就能用**，版本号不必一模一样
+
+**安装方式（Windows）**
+
+1. 解压 zip 到一个固定目录（别放桌面后删掉，后面重装还要用）
+2. 设备保持 BootROM/下载模式（关机后同时按住音量加+减再插线，约 10 秒端口出现）
+3. 设备管理器里会出现带感叹号的 `SPRD U2S Diag` 或未知设备 → 右键「更新驱动程序」→「浏览我的电脑」→ 选解压目录 → 勾「包括子文件夹」
+4. 装完看端口：应在 **端口(COM 和 LPT)** 下出现 `SPRD U2S Diag (COMx)`，状态 OK
+5. 快捷做法：本项目 `tools/install-sprd-driver.ps1`、`install-sprd-driver2.ps1`、`install-sprd-driver3.ps1` 是当时用的三个版本（第三个可用），也可直接 `pnputil /add-driver <inf> /install`
+
+**另一类驱动：ADB 接口**
+
+`adb` 走的是另一套接口（`sprdadb.inf` 或 Windows 通用 ADB 驱动）。如果 `adb devices` 空、而设备管理器里有一个未知设备，装 Google 的 **USB Driver** 或让 Windows 自动匹配 WinUSB 即可，与 SPD 驱动是两件事，**别混着装**。判断方法：`adb devices` 有反应 = ADB 驱动没问题；`spd_dump` 报 `usb_send failed` = SPD 驱动有问题。
+
+**不要装的两类东西**
+
+1. 2015 版 "DriverCoding Corporation" 通用 VCOM（能装能识别，但 `spd_dump` 必失败）
+2. 各种"一键刷机工具"自带的驱动包——它们常会覆盖已装好的官方驱动，把能用的通道搞坏；装之前先确认它是否就是 4.20.4201 这一套
 
 ## 四、数据与备份（关键）
 
