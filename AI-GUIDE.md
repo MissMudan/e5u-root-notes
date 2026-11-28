@@ -16,6 +16,7 @@ https://github.com/MissMudan/e5u-root-notes
 请按以下顺序阅读，不要跳：
   1. README.md                  —— 现状、结论、已交付内容
   2. docs/00-preparation.md     —— 开工前的硬性条件（缺一项都不许动手）
+  2.5 docs/06-machine-profile.md —— 硬件档案（SoC/CPU簇/GPU/存储/屏幕/手柄/传感器/散热）与"能不能照搬"的三档判据
   3. docs/05-full-flow.md       —— 端到端 10 个阶段，每步都有预期输出与失败处理
   4. docs/01-bootloader-unlock.md —— BootROM 解锁细节（驱动、擦 SPL、解锁标志判据）
   5. docs/02-magisk-root.md     —— headless 打 init_boot 补丁、双槽、回滚
@@ -24,6 +25,7 @@ https://github.com/MissMudan/e5u-root-notes
 
 硬性纪律：
 - 第一步永远是让人类开启开发者选项（设置→关于手机→连点版本号 7 次）并打开 USB 调试，插线时在手机上勾"一律允许"；`adb devices` 必须显示 device（不是 unauthorized/offline/空），否则不许进入任何后续步骤。
+- 第二步跑 scripts/collect-profile.ps1 采硬件档案，对照 docs/06 的三档判据；平台、硬件标识、构建号任何一项不同，就不许直接套用后面的分区名与偏移。
 - 每一步执行后，先比对预期输出再执行下一步；不符就停下诊断，不许"再试一次看看"。
 - 每两条 spd_dump 命令之间必须 Stop-Process spd_dump，否则 COM 口被占用报 Access denied。
 - 擦除 splloader / splloader_bak 之前，必须确认已拿到 262144B 的 splloader.bin 和 3145728B 的 uboot.bin。
