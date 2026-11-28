@@ -20,6 +20,7 @@ https://github.com/MissMudan/e5u-root-notes
   3. docs/05-full-flow.md       —— 端到端 10 个阶段，每步都有预期输出与失败处理
   4. docs/01-bootloader-unlock.md —— BootROM 解锁细节（驱动、擦 SPL、解锁标志判据）
   5. docs/02-magisk-root.md     —— headless 打 init_boot 补丁、双槽、回滚
+  5.5 docs/07-flashing.md       —— 刷写操作手册：三条通道怎么选、A/B 双槽、常用命令、展锐 fastboot 怪脾气、回滚与刷 GSI
   6. docs/04-failed-paths.md    —— 已经验证走不通的路，不要重复尝试
   7. artifacts/                 —— 每一步的原始 spd_dump 日志，用来对照"正常输出长什么样"
 
