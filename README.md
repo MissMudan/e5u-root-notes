@@ -118,5 +118,6 @@ artifacts/  实测日志、分区表、解锁标志样本
 ## 致谢
 
 - [TomKing062/CVE-2022-38694_unlock_bootloader](https://github.com/TomKing062/CVE-2022-38694_unlock_bootloader) — 解锁工具链与 `spd_dump`
+- [TomKing062/spreadtrum_flash](https://github.com/TomKing062/spreadtrum_flash) — `spd_dump` 发布处，驱动备用来源
 - HuskyDG 及后续维护者 — Kitsune Mask
-- SPD 官方驱动 `SPD_Driver_R4.20.4201` 的提供方
+- SPD 官方驱动 `SPD_Driver_R4.20.4201` 的提供方 — 下载地址与验收方法见 [docs/00-preparation.md 第 3.1 节](docs/00-preparation.md)
